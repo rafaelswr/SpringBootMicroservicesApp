@@ -1,5 +1,5 @@
 ### Tecnologies
-Java\MongoDB\Postman\SpringBoot\SpringCloud
+Java - MongoDB - Postman - SpringBoot - SpringCloud
 
 ## IDE
 IntelliJ 
