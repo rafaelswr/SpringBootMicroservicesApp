@@ -18,4 +18,13 @@ public class ProductResponseDTO {
     private String description;
     private BigDecimal price;
 
+    @Override
+    public String toString() {
+        return "Product {" +
+                "productId='" + productId + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                '}';
+    }
 }
