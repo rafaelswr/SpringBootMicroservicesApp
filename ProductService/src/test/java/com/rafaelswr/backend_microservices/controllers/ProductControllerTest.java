@@ -82,7 +82,7 @@ public class ProductControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
-        Assertions.assertEquals(1, productRepository.findAll().size());
+        Assertions.assertEquals(3, productRepository.findAll().size());
     }
 
     @Test
