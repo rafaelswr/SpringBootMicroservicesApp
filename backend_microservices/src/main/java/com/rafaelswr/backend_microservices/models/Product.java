@@ -2,6 +2,7 @@ package com.rafaelswr.backend_microservices.models;
 
 import lombok.*;
 import org.bson.types.ObjectId;
+import org.springframework.aot.generate.GenerationContext;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

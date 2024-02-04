@@ -13,4 +13,13 @@ public class ProductRequestDTO {
     private String name;
     private String description;
     private BigDecimal price;
+
+    @Override
+    public String toString() {
+        return "ProductRequestDTO {" +
+                "name ='" + name + '\'' +
+                ", description ='" + description + '\'' +
+                ", price =" + price +
+                " }";
+    }
 }
