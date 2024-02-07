@@ -5,6 +5,7 @@ import com.rafaelswr.orderservice.dto.OrderRequestDTO;
 import com.rafaelswr.orderservice.models.Order;
 import com.rafaelswr.orderservice.models.OrderLineItems;
 import com.rafaelswr.orderservice.repositories.OrderRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class OrderService {
     private OrderRepository orderRepository;
 
