@@ -1,5 +1,7 @@
 ### Tecnologies
-Java - MongoDB - Postman - SpringBoot - SpringCloud
+Java - MongoDB(MongoDB Compass & Atlas) -
+Postman - SpringBoot - SpringCloud -
+MySQL(cmd & workBench)
 
 ## Integration Tests
 TestContainers
