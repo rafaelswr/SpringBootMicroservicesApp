@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,8 +23,9 @@ public class Order {
 
     private String orderNumber;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
-    private List<OrderLineItems> orderLineItemsList;
+    @OneToMany(cascade = CascadeType.ALL , mappedBy = "order")
+    private List<OrderLineItems> orderLineItemsList = new ArrayList<>();
+
 
 
 }

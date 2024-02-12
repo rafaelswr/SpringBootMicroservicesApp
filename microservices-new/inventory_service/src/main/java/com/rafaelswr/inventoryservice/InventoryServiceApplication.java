@@ -18,10 +18,12 @@ public class InventoryServiceApplication {
     @Bean
     public CommandLineRunner commandLineRunner(InventoryService inventoryService, InventoryRepository inventoryRepository){
         return args -> {
-            Inventory inv = new Inventory("Iphone 13",2);
-            Inventory inv2 = new Inventory("Macbook Air 13",10);
+            Inventory inv = new Inventory("iphone_13",20);
+            Inventory inv2 = new Inventory("macbook_air_13",10);
+            Inventory inv3 = new Inventory("mouse_elgato",50);
             inventoryRepository.save(inv2);
             inventoryRepository.save(inv);
+            inventoryRepository.save(inv3);
 
         };
     }
