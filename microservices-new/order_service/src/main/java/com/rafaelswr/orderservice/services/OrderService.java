@@ -1,55 +1,82 @@
 package com.rafaelswr.orderservice.services;
 
+import com.rafaelswr.orderservice.dto.InventoryResponse;
 import com.rafaelswr.orderservice.dto.OrderLineItemsDTO;
 import com.rafaelswr.orderservice.dto.OrderRequestDTO;
 import com.rafaelswr.orderservice.models.Order;
 import com.rafaelswr.orderservice.models.OrderLineItems;
 import com.rafaelswr.orderservice.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.rmi.server.UID;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
+@Slf4j
 @Transactional
 public class OrderService {
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+
+    private final WebClient webClient;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, WebClient webClient) {
         this.orderRepository = orderRepository;
+        this.webClient = webClient;
     }
-    public void shouldCreateNewOrder(OrderRequestDTO orderRequestDTO) {
+
+    public synchronized void shouldCreateNewOrder(OrderRequestDTO orderRequestDTO) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
-        List<OrderLineItems> orderItems = orderRequestDTO.getOrderLineItemsDTOList().stream().map(
-                item->mapTo(item, order)
-        ).toList();
-        order.setOrderLineItemsList(orderItems);
-        orderRepository.save(order);
+        log.info("ORDER REQUEST DTO:" + orderRequestDTO.toString());
+
+        List<Mono<OrderLineItems>> orderLineItemsMonos = orderRequestDTO.getOrderLineItemsDTOList().stream()
+                .map(item -> webClient.put()
+                        .uri(uriBuilder -> uriBuilder.path("/inventory/ops")
+                                .queryParam("skuCode", item.getSkuCode())
+                                .queryParam("quantity", item.getQuantity())
+                                .build())
+                        .retrieve()
+                        .bodyToMono(InventoryResponse.class)
+                        .flatMap(inventory -> {
+                            if (inventory.getIsInStock()) {
+                                //transform Mono<InventoryResponse> to Mono<OrderLineItems> instance
+                                return Mono.just(mapTo(item, order));
+                            } else {
+                                //item will not belong to flux
+                                return Mono.empty();
+                            }
+                        }))
+                .toList();
+
+        Flux<OrderLineItems> orderLineItemsFlux = Flux.merge(orderLineItemsMonos);
+
+        orderLineItemsFlux.collectList().subscribe(orderLineItems -> {
+            order.getOrderLineItemsList().addAll(orderLineItems);
+            orderRepository.save(order);
+        });
     }
 
     private OrderLineItems mapTo(OrderLineItemsDTO item, Order order) {
-        OrderLineItems shouldItem = new OrderLineItems(item.getSkuCode(), item.getPrice(), item.getQuantity());
-        shouldItem.setOrder(order);
-        return shouldItem;
-
+            double priceQuantity =  (item.getPrice().doubleValue() * item.getQuantity());
+            OrderLineItems shouldItem = new OrderLineItems(item.getSkuCode(),BigDecimal.valueOf(priceQuantity), item.getQuantity());
+            shouldItem.setOrder(order);
+            return shouldItem;
     }
+
     public List<OrderLineItemsDTO> getAllItemsByOrderNumber(String orderNumber) throws Exception {
         Optional<Order> orderByNumber = orderRepository.getByOrderNumber(orderNumber);
-
         if(orderByNumber.isPresent()){
-           return  orderByNumber.get().getOrderLineItemsList().stream().map(this::mapToItemDTO).collect(Collectors.toList());
+           return  orderByNumber.get().getOrderLineItemsList().stream().map(this::mapToItemDTO).toList();
         }else {
             throw new Exception("Not found order");
         }
-
     }
 
     private OrderLineItemsDTO mapToItemDTO(OrderLineItems orderLineItems) {
