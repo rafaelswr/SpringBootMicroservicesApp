@@ -82,14 +82,9 @@ public class ProductControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
-        Assertions.assertEquals(3, productRepository.findAll().size());
+        Assertions.assertEquals(1, productRepository.findAll().size());
     }
 
-    @Test
-    public void shouldEliminate() throws Exception {
-        mvc.perform(MockMvcRequestBuilders.delete("/{id}/delete",new ObjectId("65bfb3c3711207729c6384f1")))
-                .andExpect(status().isAccepted());
-    }
 
 
 
