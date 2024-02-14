@@ -23,12 +23,12 @@ import java.util.*;
 public class OrderService {
     private final OrderRepository orderRepository;
 
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, WebClient webClient) {
+    public OrderService(OrderRepository orderRepository, WebClient.Builder webClientBuilder) {
         this.orderRepository = orderRepository;
-        this.webClient = webClient;
+        this.webClientBuilder = webClientBuilder;
     }
 
     public synchronized void shouldCreateNewOrder(OrderRequestDTO orderRequestDTO) {
@@ -37,11 +37,12 @@ public class OrderService {
         log.info("ORDER REQUEST DTO:" + orderRequestDTO.toString());
 
         List<Mono<OrderLineItems>> orderLineItemsMonos = orderRequestDTO.getOrderLineItemsDTOList().stream()
-                .map(item -> webClient.put()
-                        .uri(uriBuilder -> uriBuilder.path("/inventory/ops")
-                                .queryParam("skuCode", item.getSkuCode())
-                                .queryParam("quantity", item.getQuantity())
-                                .build())
+                .map(item -> webClientBuilder.build().put()
+                        .uri("http://inventory-service/inventory/ops",
+                                uriBuilder ->
+                                        uriBuilder.queryParam("skuCode", item.getSkuCode())
+                                                .queryParam("quantity", item.getQuantity())
+                                    .build())
                         .retrieve()
                         .bodyToMono(InventoryResponse.class)
                         .flatMap(inventory -> {
