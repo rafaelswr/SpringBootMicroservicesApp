@@ -1,7 +1,8 @@
 ### Tecnologies
 Java - MongoDB(MongoDB Compass & Atlas) -
-Postman - SpringBoot - SpringCloud -
-MySQL(cmd & workBench)
+Postman (API tests) - SpringBoot - SpringCloud -
+MySQL(cmd & workBench) - Netflix Eureka (service discovering) - 
+Spring WebFlux (http requests between services) 
 
 ## Integration Tests
 TestContainers
