@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/inventory")
 @Slf4j
@@ -22,7 +24,7 @@ public class InventoryController {
 
     // http://localhost:8082/inventory/iphone-13
     //receive a list of skuCodes
-    @GetMapping()
+    @GetMapping("/{skuCode}")
     @ResponseStatus(HttpStatus.OK)
     public InventoryResponse isInStock(@PathVariable String skuCode){
         return inventoryService.InStock(skuCode);
@@ -39,6 +41,12 @@ public class InventoryController {
     public void quantityOperation(@RequestBody InventoryResponse inventoryResponse){
         log.info("OBJETO RECEBIDO: "+ inventoryResponse);
         inventoryService.quantityOps(inventoryResponse);
+    }
+
+    @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public List<InventoryResponse> getAllInventory(){
+        return inventoryService.getAll();
     }
 
 }

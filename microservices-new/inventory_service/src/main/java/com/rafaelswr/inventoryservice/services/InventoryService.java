@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -66,5 +68,14 @@ public class InventoryService {
             return InventoryResponse.builder().isInStock(false).build();
         }
 
+    }
+
+    public List<InventoryResponse> getAll() {
+        return inventoryRepository.findAll().stream().map(this::mapToResponse).toList();
+    }
+
+    private InventoryResponse mapToResponse(Inventory inventory) {
+        return InventoryResponse.builder().skuCode(inventory.getSkuCode())
+                .quantity(inventory.getQuantity()).isInStock(inventory.getQuantity()>=0).build();
     }
 }
