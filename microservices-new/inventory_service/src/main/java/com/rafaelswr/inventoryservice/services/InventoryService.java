@@ -44,13 +44,14 @@ public class InventoryService {
  }
 
     @Transactional
-    public InventoryResponse getInventoryBySkuCode(String skuCode) throws Exception {
+    public InventoryResponse getInventoryBySkuCode(String skuCode, Integer quantity) throws Exception {
         Optional<Inventory> inv = inventoryRepository.findBySkuCode(skuCode);
+
         if(inv.isPresent()){
             return InventoryResponse.builder()
                     .skuCode(inv.get().getSkuCode())
                     .quantity(inv.get().getQuantity())
-                    .isInStock(inv.get().getQuantity()>0)
+                    .isInStock((inv.get().getQuantity()-quantity)>=0)
                     .build();
         }else{
             throw new Exception("NOT FOUND PRODUCT");

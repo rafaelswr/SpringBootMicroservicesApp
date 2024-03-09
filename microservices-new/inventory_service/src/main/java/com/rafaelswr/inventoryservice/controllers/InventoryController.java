@@ -32,8 +32,8 @@ public class InventoryController {
 
     @GetMapping("/ops")
     @ResponseStatus(HttpStatus.OK)
-    public InventoryResponse getInventoryInstance(@RequestParam String skuCode) throws Exception {
-        return inventoryService.getInventoryBySkuCode(skuCode);
+    public InventoryResponse getInventoryInstance(@RequestParam String skuCode, @RequestParam Integer quantity) throws Exception {
+        return inventoryService.getInventoryBySkuCode(skuCode, quantity);
     }
 
     @PutMapping("/finalOps")

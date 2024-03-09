@@ -8,9 +8,7 @@ import com.rafaelswr.orderservice.models.OrderLineItems;
 import com.rafaelswr.orderservice.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -43,7 +41,8 @@ public class OrderService {
                         .uri("http://inventory-service/inventory/ops",
                                 uriBuilder ->
                                         uriBuilder.queryParam("skuCode", item.getSkuCode())
-                                    .build())
+                                                .queryParam("quantity", item.getQuantity())
+                                                .build())
                         .retrieve()
                         .bodyToMono(InventoryResponse.class)
                         .flatMap(inventory -> {
@@ -52,7 +51,7 @@ public class OrderService {
                                 return Mono.just(mapTo(item, order));
                             } else {
                                 //item will not belong to flux
-                             //   return Mono.empty();
+                                //return Mono.empty();
                                 return Mono.error(new Exception("NOT IN STOCK "));
                             }
                         }))
