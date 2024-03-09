@@ -8,7 +8,9 @@ import com.rafaelswr.orderservice.models.OrderLineItems;
 import com.rafaelswr.orderservice.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -37,11 +39,10 @@ public class OrderService {
         log.info("ORDER REQUEST DTO:" + orderRequestDTO.toString());
 
         List<Mono<OrderLineItems>> orderLineItemsMonos = orderRequestDTO.getOrderLineItemsDTOList().stream()
-                .map(item -> webClientBuilder.build().put()
+                .map(item -> webClientBuilder.build().get()
                         .uri("http://inventory-service/inventory/ops",
                                 uriBuilder ->
                                         uriBuilder.queryParam("skuCode", item.getSkuCode())
-                                                .queryParam("quantity", item.getQuantity())
                                     .build())
                         .retrieve()
                         .bodyToMono(InventoryResponse.class)
@@ -51,7 +52,8 @@ public class OrderService {
                                 return Mono.just(mapTo(item, order));
                             } else {
                                 //item will not belong to flux
-                                return Mono.empty();
+                             //   return Mono.empty();
+                                return Mono.error(new Exception("NOT IN STOCK "));
                             }
                         }))
                 .toList();
@@ -59,10 +61,25 @@ public class OrderService {
         Flux<OrderLineItems> orderLineItemsFlux = Flux.merge(orderLineItemsMonos);
 
         orderLineItemsFlux.collectList().subscribe(orderLineItems -> {
+            //guardar nova order e associar a lista de orderlineItems
             order.getOrderLineItemsList().addAll(orderLineItems);
             orderRepository.save(order);
+
+            //depois de salvar a ordem, decrementar a quantidade no inventário para cada produto;
+            orderLineItems.forEach(item -> {
+                webClientBuilder.build().put()
+                        .uri("http://inventory-service/inventory/finalOps",
+                                uriBuilder ->
+                                        uriBuilder.queryParam("skuCode", item.getSkuCode())
+                                                .queryParam("quantity", item.getQuantity())
+                                                .build())
+                        .retrieve()
+                        .bodyToMono(Void.class)
+                        .subscribe();
+            });
         });
     }
+
 
     private OrderLineItems mapTo(OrderLineItemsDTO item, Order order) {
             double priceQuantity =  (item.getPrice().doubleValue() * item.getQuantity());

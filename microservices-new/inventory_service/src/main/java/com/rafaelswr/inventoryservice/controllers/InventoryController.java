@@ -30,10 +30,16 @@ public class InventoryController {
         return inventoryService.InStock(skuCode);
     }
 
-    @PutMapping("/ops")
+    @GetMapping("/ops")
     @ResponseStatus(HttpStatus.OK)
-    public InventoryResponse getInventoryInstance(@RequestParam String skuCode, @RequestParam Integer quantity){
-        return inventoryService.getInventoryBySkuCode(skuCode, quantity);
+    public InventoryResponse getInventoryInstance(@RequestParam String skuCode) throws Exception {
+        return inventoryService.getInventoryBySkuCode(skuCode);
+    }
+
+    @PutMapping("/finalOps")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateStocks(@RequestParam String skuCode, @RequestParam Integer quantity) throws Exception {
+        inventoryService.getUpdateBySkuCode(skuCode, quantity);
     }
 
     @PutMapping("/{skuCode}")

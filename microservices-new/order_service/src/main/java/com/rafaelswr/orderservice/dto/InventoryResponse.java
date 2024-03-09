@@ -16,6 +16,7 @@ public class InventoryResponse {
     private String skuCode;
     private Integer quantity;
     private Boolean isInStock;
+    private BigDecimal price;
 
 
 

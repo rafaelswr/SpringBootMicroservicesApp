@@ -44,9 +44,18 @@ public class InventoryService {
  }
 
     @Transactional
-    public InventoryResponse getInventoryBySkuCode(String skuCode, Integer quantity) {
+    public InventoryResponse getInventoryBySkuCode(String skuCode) throws Exception {
         Optional<Inventory> inv = inventoryRepository.findBySkuCode(skuCode);
-
+        if(inv.isPresent()){
+            return InventoryResponse.builder()
+                    .skuCode(inv.get().getSkuCode())
+                    .quantity(inv.get().getQuantity())
+                    .isInStock(inv.get().getQuantity()>0)
+                    .build();
+        }else{
+            throw new Exception("NOT FOUND PRODUCT");
+        }
+        /*
         if (inv.isPresent() && inv.get().getQuantity() > 0) {
             int totalStored = inv.get().getQuantity();
             int afterOp = totalStored - quantity;
@@ -58,16 +67,14 @@ public class InventoryService {
                         .isInStock(true)
                         .build();
             } else {
-                inv.get().setQuantity(0);
-                return InventoryResponse.builder()
-                        .skuCode(inv.get().getSkuCode())
-                        .quantity(0)
-                        .isInStock(false).build();
+               throw new Exception("DONT EXCEED THE PRODUCT STOCK PLEASE");
             }
         } else {
             return InventoryResponse.builder().isInStock(false).build();
         }
 
+
+         */
     }
 
     public List<InventoryResponse> getAll() {
@@ -78,4 +85,18 @@ public class InventoryService {
         return InventoryResponse.builder().skuCode(inventory.getSkuCode())
                 .quantity(inventory.getQuantity()).isInStock(inventory.getQuantity()>=0).build();
     }
+
+
+    @Transactional
+    public void getUpdateBySkuCode(String skuCode, Integer quantity) throws Exception {
+        Optional<Inventory> inv = inventoryRepository.findBySkuCode(skuCode);
+        if (inv.isPresent() && inv.get().getQuantity() - quantity >= 0) {
+            int after = inv.get().getQuantity() - quantity;
+            inv.get().setQuantity(after);
+            log.info("UPDATED: " + inv.get().getQuantity());
+        } else {
+            throw new Exception("ERROR");
+        }
+    }
+
 }
