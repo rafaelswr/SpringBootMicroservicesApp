@@ -4,6 +4,7 @@ import com.rafaelswr.inventoryservice.dto.InventoryResponse;
 import com.rafaelswr.inventoryservice.models.Inventory;
 import com.rafaelswr.inventoryservice.repositories.InventoryRepository;
 import jakarta.transaction.Transactional;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,12 @@ public class InventoryService {
  }
 
     @Transactional
+    @SneakyThrows
     public InventoryResponse getInventoryBySkuCode(String skuCode, Integer quantity) throws Exception {
         Optional<Inventory> inv = inventoryRepository.findBySkuCode(skuCode);
-
+        log.info("WIAT STARTED");
+        Thread.sleep(10000);
+        log.info("WAIT ENDED");
         if(inv.isPresent()){
             return InventoryResponse.builder()
                     .skuCode(inv.get().getSkuCode())

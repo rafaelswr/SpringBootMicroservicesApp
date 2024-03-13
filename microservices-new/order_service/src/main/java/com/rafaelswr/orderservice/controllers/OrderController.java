@@ -5,6 +5,7 @@ import com.rafaelswr.orderservice.dto.OrderLineItemsDTO;
 import com.rafaelswr.orderservice.dto.OrderRequestDTO;
 import com.rafaelswr.orderservice.services.OrderService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/order")
@@ -29,9 +31,9 @@ public class OrderController {
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.CREATED)
     @CircuitBreaker(name="inventory", fallbackMethod = "fallbackMethod")
-    public String  addOrder(@RequestBody OrderRequestDTO orderRequestDTO){
-        orderService.shouldCreateNewOrder(orderRequestDTO);
-        return "Order placed successfully";
+    @TimeLimiter(name = "inventory")
+    public CompletableFuture<String> addOrder(@RequestBody OrderRequestDTO orderRequestDTO){
+        return CompletableFuture.supplyAsync(()->orderService.shouldCreateNewOrder(orderRequestDTO));
     }
 
     @GetMapping("/{orderNumber}")
@@ -47,8 +49,8 @@ public class OrderController {
         log.info("Order: "+orderNumber +" deleted\n");
     }
 
-    public String fallbackMethod(OrderRequestDTO orderRequestDTO, Throwable throwable) {
-        return "Ops! try again later!";
+    public CompletableFuture<String> fallbackMethod(OrderRequestDTO orderRequestDTO, Throwable throwable) {
+        return CompletableFuture.supplyAsync(()->"Ops! try again later!");
     }
 
 }

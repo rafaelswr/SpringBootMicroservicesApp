@@ -31,7 +31,7 @@ public class OrderService {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public synchronized void shouldCreateNewOrder(OrderRequestDTO orderRequestDTO) {
+    public String shouldCreateNewOrder(OrderRequestDTO orderRequestDTO) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
         log.info("ORDER REQUEST DTO:" + orderRequestDTO.toString());
@@ -45,16 +45,17 @@ public class OrderService {
                                                 .build())
                         .retrieve()
                         .bodyToMono(InventoryResponse.class)
-                        .flatMap(inventory -> {
-                            if (inventory.getIsInStock()) {
-                                //transform Mono<InventoryResponse> to Mono<OrderLineItems> instance
-                                return Mono.just(mapTo(item, order));
-                            } else {
-                                //item will not belong to flux
-                                //return Mono.empty();
-                                return Mono.error(new Exception("NOT IN STOCK "));
-                            }
-                        }))
+                .flatMap(inventory -> {
+                    if (inventory.getIsInStock()) {
+                        //transform Mono<InventoryResponse> to Mono<OrderLineItems> instance
+                        return Mono.just(mapTo(item, order));
+                    } else {
+                        //item will not belong to flux
+                        //return Mono.empty();
+                        return Mono.error(new Exception("NOT IN STOCK "));
+                        //return "ER"
+                    }
+                }))
                 .toList();
 
         Flux<OrderLineItems> orderLineItemsFlux = Flux.merge(orderLineItemsMonos);
@@ -77,6 +78,11 @@ public class OrderService {
                         .subscribe();
             });
         });
+        return "Order Placed Successfully";
+
+
+
+
     }
 
 
