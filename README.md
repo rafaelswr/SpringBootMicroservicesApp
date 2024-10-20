@@ -1,5 +1,5 @@
-###Description
-Ecommerce example oder
+### Description
+Simple eCommerce service example with orders, inventory, and products.
 
 ### Tecnologies
 Java - MongoDB(MongoDB Compass & Atlas) -
